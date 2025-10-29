@@ -22,6 +22,7 @@ export class ChatService {
   async createMessage(senderId: string, createMessageDto: CreateMessageDto) {
     try {
       const { content, receiverId, chatRoomId } = createMessageDto;
+      console.log(`📝 Creando mensaje: "${content}" de ${senderId} a ${receiverId}, sala: ${chatRoomId}`);
       
       // Buscar sala existente entre estos dos usuarios
       let room = await this.chatRoomRepository.findOne({
@@ -116,18 +117,41 @@ export class ChatService {
         .orderBy('message.createdAt', 'DESC')
         .getMany();
 
+      // Calcular contador de mensajes no leídos por sala
+      const roomsWithUnreadCount = await Promise.all(
+        rooms.map(async (room) => {
+          // Contar mensajes no leídos en esta sala donde el usuario es el receptor
+          const result = await this.messageRepository.query(
+            'SELECT COUNT(*) as count FROM messages WHERE "chatRoomId" = $1 AND "receiverId" = $2 AND "senderId" != $3 AND "isRead" = false',
+            [room.id, userId, userId]
+          );
+          const unreadCount = parseInt(result[0].count);
+
+          return {
+            id: room.id,
+            participants: room.participants,
+            lastMessage: room.messages && room.messages.length > 0 ? {
+              id: room.messages[0].id,
+              content: room.messages[0].content,
+              senderId: room.messages[0].senderId,
+              receiverId: room.messages[0].receiverId,
+              createdAt: room.messages[0].createdAt
+            } : null,
+            unreadCount: unreadCount,
+            hasUnreadMessages: unreadCount > 0
+          };
+        })
+      );
+
+      // Ordenar por último mensaje
+      roomsWithUnreadCount.sort((a, b) => {
+        const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+        const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+
       return {
-        data: rooms.map(room => ({
-          id: room.id,
-          participants: room.participants,
-          lastMessage: room.messages && room.messages.length > 0 ? {
-            id: room.messages[0].id,
-            content: room.messages[0].content,
-            senderId: room.messages[0].senderId,
-            createdAt: room.messages[0].createdAt
-          } : null,
-          unreadCount: 0 // TODO: Implementar contador de mensajes no leídos
-        }))
+        data: roomsWithUnreadCount
       };
     } catch (error) {
       console.error('Error obteniendo salas de chat:', error);
@@ -136,19 +160,25 @@ export class ChatService {
   }
 
   async getChatMessages(userId: string, roomId: string) {
+    console.log(`🔍 Obteniendo mensajes para usuario ${userId} en sala ${roomId}`);
+    
     // Verificar que el usuario tiene acceso a esta sala
     const room = await this.chatRoomRepository.findOne({
       where: { id: roomId }
     });
 
     if (!room) {
+      console.log(`❌ Sala ${roomId} no encontrada`);
       // Si la sala no existe, retornar mensajes vacíos
       return {
         posts: []
       };
     }
 
+    console.log(`✅ Sala encontrada: ${room.id}, participantes: ${room.participants}`);
+
     if (!room.participants.includes(userId)) {
+      console.log(`❌ Usuario ${userId} no tiene acceso a la sala ${roomId}`);
       throw new Error('No tienes acceso a esta sala de chat');
     }
 
@@ -156,6 +186,8 @@ export class ChatService {
       where: { chatRoomId: roomId },
       order: { createdAt: 'ASC' }
     });
+
+    console.log(`📨 Encontrados ${messages.length} mensajes en la sala ${roomId}`);
 
     // Obtener información de los remitentes
     const senderIds = [...new Set(messages.map(m => m.senderId))];
@@ -225,5 +257,48 @@ export class ChatService {
         email: 'usuario@test.com'
       }
     };
+  }
+
+  async getUnreadMessageCount(userId: string) {
+    try {
+      // Contar mensajes no leídos usando una consulta más específica
+      const result = await this.messageRepository.query(
+        `SELECT COUNT(*) as count FROM messages m 
+         INNER JOIN chat_rooms r ON m."chatRoomId" = r.id 
+         WHERE r.participants @> $1 
+         AND m."receiverId" = $2 
+         AND m."senderId" != $3 
+         AND m."isRead" = false`,
+        [[userId], userId, userId]
+      );
+      const unreadCount = parseInt(result[0].count);
+
+      return { count: unreadCount };
+    } catch (error) {
+      console.error('Error obteniendo contador de mensajes no leídos:', error);
+      return { count: 0 };
+    }
+  }
+
+  async markMessagesAsRead(userId: string, roomId: string) {
+    try {
+      // Marcar todos los mensajes no leídos de esta sala como leídos
+      const result = await this.messageRepository
+        .createQueryBuilder()
+        .update(Message)
+        .set({ isRead: true })
+        .where('chatRoomId = :roomId', { roomId })
+        .andWhere('receiverId = :userId', { userId })
+        .andWhere('isRead = false')
+        .execute();
+
+      return { 
+        message: 'Mensajes marcados como leídos',
+        count: result.affected || 0
+      };
+    } catch (error) {
+      console.error('Error marcando mensajes como leídos:', error);
+      throw error;
+    }
   }
 }

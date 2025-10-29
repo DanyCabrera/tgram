@@ -19,7 +19,7 @@ import {
 
 const loginSchema = z.object({
   email: z.string().email('Debe ser un email válido'),
-  password: z.string().min(1, 'La contraseña es requerida'),
+  password: z.string().min(1, 'Campo requerido'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -54,14 +54,14 @@ export const LoginForm: React.FC = () => {
       
       if (error.response?.data?.message) {
         if (error.response.data.message === 'Credenciales inválidas') {
-          errorMessage = 'El correo electrónico o la contraseña son incorrectos. Verifica tus datos e intenta nuevamente.';
+          errorMessage = 'Campos invalidos';
         } else {
           errorMessage = error.response.data.message;
         }
       } else if (error.response?.status === 401) {
-        errorMessage = 'El correo electrónico o la contraseña son incorrectos. Verifica tus datos e intenta nuevamente.';
+        errorMessage = 'Campos invalidos';
       } else if (error.response?.status === 404) {
-        errorMessage = 'No se encontró una cuenta con este correo electrónico. ¿Quieres registrarte?';
+        errorMessage = 'Campos invalidos';
       }
       
       setError(errorMessage);
@@ -72,7 +72,7 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Brand */}
         <div className="text-center mb-8">
@@ -82,13 +82,10 @@ export const LoginForm: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             TGram
           </h1>
-          <p className="text-gray-600">
-            Inicia sesión en tu cuenta
-          </p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        <div className="bg-white rounded-2xl">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -163,15 +160,6 @@ export const LoginForm: React.FC = () => {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              ¿No tienes cuenta?{' '}
-              <a href="/auth/register" className="text-gray-900 hover:text-gray-700 font-semibold transition-colors">
-                Regístrate
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </div>

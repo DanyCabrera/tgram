@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { useMessages } from './MessageContext';
 import { apiService } from '../services/api';
 import { v4 as uuidv4 } from 'uuid';
 import { io, Socket } from 'socket.io-client';
@@ -63,6 +64,7 @@ interface ChatProviderProps {
 
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const { user } = useAuth();
+  const { refreshMessageCount } = useMessages();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [currentChatRoom, setCurrentChatRoom] = useState<ChatRoom | null>(null);
@@ -71,16 +73,81 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const [ws, setWs] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
+  // Función para guardar el estado en localStorage
+  const saveStateToStorage = (rooms: ChatRoom[], currentRoom: ChatRoom | null, msgs: Message[]) => {
+    if (user) {
+      const state = {
+        chatRooms: rooms,
+        currentChatRoom: currentRoom,
+        messages: msgs,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(`chatState_${user.id}`, JSON.stringify(state));
+    }
+  };
+
+  // Función para cargar el estado desde localStorage
+  const loadStateFromStorage = () => {
+    if (user) {
+      const saved = localStorage.getItem(`chatState_${user.id}`);
+      if (saved) {
+        try {
+          const state = JSON.parse(saved);
+          // Solo cargar si el estado es reciente (menos de 1 hora)
+          if (Date.now() - state.timestamp < 3600000) {
+            setChatRooms(state.chatRooms || []);
+            setCurrentChatRoom(state.currentChatRoom || null);
+            setMessages(state.messages || []);
+            
+            // Si hay una sala actual, cargar sus mensajes desde el backend
+            if (state.currentChatRoom && !state.currentChatRoom.id.startsWith('temp-')) {
+              loadMessages(state.currentChatRoom.id, true);
+            }
+            
+            return true;
+          }
+        } catch (error) {
+          console.error('Error cargando estado del chat:', error);
+        }
+      }
+    }
+    return false;
+  };
+
   useEffect(() => {
     if (user) {
-      // Cargar salas de chat primero
-      loadChatRooms();
+      // Primero intentar cargar estado desde localStorage
+      const stateLoaded = loadStateFromStorage();
+      
+      if (stateLoaded) {
+        console.log('✅ Estado del chat cargado desde localStorage');
+        // Si se cargó el estado, también cargar desde el backend para sincronizar
+        loadChatRooms(true);
+      } else {
+        console.log('🔄 Cargando estado del chat desde el backend');
+        // Cargar salas de chat desde el backend
+        loadChatRooms(false);
+      }
+      
       // Solicitar permisos para notificaciones
       if (Notification.permission === 'default') {
         Notification.requestPermission();
       }
       // Inicializar WebSocket para mensajería en tiempo real
       initializeWebSocket();
+    } else {
+      // Limpiar estado cuando no hay usuario
+      setMessages([]);
+      setChatRooms([]);
+      setCurrentChatRoom(null);
+      setActiveUsers(new Set());
+      if (ws) {
+        ws.disconnect();
+        setWs(null);
+      }
+      setIsConnected(false);
+      // Limpiar localStorage
+      localStorage.removeItem(`chatState_${user?.id}`);
     }
 
     return () => {
@@ -93,9 +160,30 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   // Efecto para recargar salas cuando se conecta el WebSocket
   useEffect(() => {
     if (ws && isConnected && user) {
-      loadChatRooms();
+      loadChatRooms(true);
     }
   }, [ws, isConnected, user]);
+
+  // Efecto para guardar el estado cuando cambien las salas
+  useEffect(() => {
+    if (user && chatRooms.length > 0) {
+      saveStateToStorage(chatRooms, currentChatRoom, messages);
+    }
+  }, [chatRooms, user]);
+
+  // Efecto para guardar el estado cuando cambien los mensajes
+  useEffect(() => {
+    if (user && messages.length > 0) {
+      saveStateToStorage(chatRooms, currentChatRoom, messages);
+    }
+  }, [messages, user]);
+
+  // Efecto para guardar el estado cuando cambie la sala actual
+  useEffect(() => {
+    if (user && currentChatRoom) {
+      saveStateToStorage(chatRooms, currentChatRoom, messages);
+    }
+  }, [currentChatRoom, user]);
 
   // Efecto para unirse automáticamente a la sala cuando cambie
   useEffect(() => {
@@ -124,7 +212,13 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         },
         transports: ['websocket', 'polling'],
         timeout: 20000,
-        forceNew: true
+        forceNew: true,
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
+        maxReconnectionAttempts: 5,
+        upgrade: true,
+        rememberUpgrade: false
       });
       
       socket.on('connect', () => {
@@ -218,6 +312,14 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         console.error('❌ Error de conexión WebSocket:', error);
         setIsConnected(false);
         setIsConnecting(false);
+        
+        // Intentar reconectar después de un delay
+        setTimeout(() => {
+          if (user && !isConnecting) {
+            console.log('🔄 Reintentando conexión WebSocket después de error...');
+            initializeWebSocket();
+          }
+        }, 5000);
       });
 
       socket.on('error', (error) => {
@@ -302,6 +404,14 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         // Actualizar la lista de salas para mostrar el último mensaje (solo si es para el usuario actual)
         if (isMessageForCurrentUser) {
           console.log('🔄 Actualizando lista de salas');
+          
+          // Recargar la lista completa de salas desde el backend para asegurar sincronización
+          loadChatRooms(true).then(() => {
+            // También actualizar el contador global de mensajes no leídos
+            refreshMessageCount();
+          }).catch(err => {
+            console.error('Error recargando salas después de nuevo mensaje:', err);
+          });
           
           // Verificar si el usuario está actualmente en esta sala de chat
           const isInCurrentRoom = currentChatRoom && (
@@ -427,8 +537,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const sendMessage = async (content: string, receiverId: string) => {
     try {
       if (!user || !currentChatRoom) {
+        console.log('❌ No hay usuario o sala de chat actual');
         return;
       }
+      
+      console.log(`📤 Enviando mensaje: "${content}" a ${receiverId} en sala ${currentChatRoom.id}`);
       
       // Crear mensaje usando la API real
       const messageData: any = {
@@ -441,7 +554,22 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         messageData.chatRoomId = currentChatRoom.id;
       }
       
+      console.log('📤 Datos del mensaje:', messageData);
       const response = await apiService.createMessage(messageData);
+      console.log('📤 Respuesta del backend:', response);
+      
+      // Si era una sala temporal, actualizar a la sala real
+      if (currentChatRoom.id.startsWith('temp-')) {
+        setCurrentChatRoom(prev => ({
+          ...prev!,
+          id: response.data.chatRoomId
+        }));
+        
+        // Unirse a la sala real
+        if (ws && isConnected) {
+          ws.emit('join_room', { room: response.data.chatRoomId });
+        }
+      }
       
       // Agregar mensaje a la lista local
       const newMessage = {
@@ -606,7 +734,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         setCurrentChatRoom(existingRoom);
         
         // Marcar mensajes como leídos
-        markMessagesAsRead(existingRoom.id);
+        await markMessagesAsRead(existingRoom.id);
         
         // Unirse a la sala de Socket.IO
         if (ws && isConnected) {
@@ -644,8 +772,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     try {
       if (!user) return;
       
+      console.log(`🔍 Cargando mensajes para sala ${chatRoomId}`);
+      
       // No cargar mensajes de salas temporales
       if (chatRoomId.startsWith('temp-')) {
+        console.log(`⚠️ Sala temporal ${chatRoomId}, no cargando mensajes`);
         if (!preserveExisting) {
         setMessages([]);
         }
@@ -654,7 +785,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       
       // Cargar mensajes desde el backend usando la API real
       const response = await apiService.getMessages(chatRoomId);
+      console.log(`📨 Respuesta del backend:`, response);
       const messagesData = response.posts || [];
+      console.log(`📨 Mensajes encontrados: ${messagesData.length}`);
       
       const messages = messagesData.map((msg: any) => ({
         id: msg.id,
@@ -688,7 +821,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     }
   };
 
-  const loadChatRooms = async () => {
+  const loadChatRooms = async (mergeWithExisting: boolean = false) => {
     try {
       if (!user) return;
       
@@ -697,6 +830,12 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       const rooms = (response as any).data || [];
       
       console.log('🔍 Salas cargadas desde el backend:', rooms);
+      
+      // Si se debe fusionar con datos existentes, no sobrescribir
+      if (mergeWithExisting && chatRooms.length > 0) {
+        console.log('🔄 Fusionando con datos existentes');
+        return;
+      }
       
       // Mapear las salas para incluir información adicional
       const mappedRooms = rooms.map((room: any) => {
@@ -785,16 +924,32 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     return isActive;
   };
 
-  const markMessagesAsRead = (chatRoomId: string) => {
-    setChatRooms(prev => prev.map(room => 
-      room.id === chatRoomId 
-        ? { 
-            ...room, 
-            unreadCount: 0,
-            hasUnreadMessages: false
-          }
-        : room
-    ));
+  const markMessagesAsRead = async (chatRoomId: string) => {
+    try {
+      // No marcar salas temporales
+      if (chatRoomId.startsWith('temp-')) {
+        return;
+      }
+
+      // Marcar mensajes como leídos en el backend
+      await apiService.markChatMessagesAsRead(chatRoomId);
+      
+      // Actualizar estado local
+      setChatRooms(prev => prev.map(room => 
+        room.id === chatRoomId 
+          ? { 
+              ...room, 
+              unreadCount: 0,
+              hasUnreadMessages: false
+            }
+          : room
+      ));
+      
+      // Actualizar el contador global de mensajes no leídos
+      refreshMessageCount();
+    } catch (error) {
+      console.error('Error marcando mensajes como leídos:', error);
+    }
   };
 
   const showNotification = (message: string, senderName: string) => {

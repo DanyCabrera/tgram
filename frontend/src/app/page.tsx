@@ -7,12 +7,15 @@ import { PostCard } from '../components/feed/PostCard';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { Post } from '../types';
+import { LoginForm } from '../components/auth/LoginForm';
+import { RegisterForm } from '../components/auth/RegisterForm';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
 
   // Cargar posts del feed
   const loadPosts = async () => {
@@ -93,27 +96,104 @@ export default function HomePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Bienvenido a TGram
-          </h1>
-          <p className="text-gray-600 mb-8">
-            Conecta con el futuro y comparte tus momentos
-          </p>
-          <div className="space-x-4">
-            <a 
-              href="/auth/login"
-              className="inline-block bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-200"
-            >
-              Iniciar Sesión
-            </a>
-            <a 
-              href="/auth/register"
-              className="inline-block border border-gray-300 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-200"
-            >
-              Registrarse
-            </a>
+      <div className="min-h-screen bg-white">
+        {/* Header */}
+        <div className="border-b border-gray-100">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">T</span>
+                </div>
+                <span className="text-xl font-bold text-black">TGram</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Branding */}
+            <div className="hidden lg:block">
+              <div className="max-w-md">
+                <h1 className="text-5xl font-bold text-black mb-6 leading-tight">
+                  Conecta con el mundo
+                </h1>
+                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                  Comparte tus momentos, descubre nuevas ideas y mantente conectado con las personas que más te importan.
+                </p>
+                <div className="flex items-center space-x-6 text-sm text-gray-500">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Mensajería en tiempo real</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Comparte contenido</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Auth Form */}
+            <div className="lg:mx-0">
+              <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                {!showRegister ? (
+                  /* Login Form */
+                  <div>
+                    
+                    <LoginForm />
+                    
+                    {/* Register Link */}
+                    <div className="mt-8 text-center">
+                      <p className="text-gray-600">
+                        ¿No tienes cuenta?{' '}
+                        <button 
+                          onClick={() => setShowRegister(true)}
+                          className="text-black hover:text-gray-800 font-semibold transition-colors"
+                        >
+                          Regístrate
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* Register Form */
+                  <div>
+                    
+                    <RegisterForm />
+                    
+                    {/* Login Link */}
+                    <div className="mt-8 text-center">
+                      <p className="text-gray-600">
+                        ¿Ya tienes cuenta?{' '}
+                        <button 
+                          onClick={() => setShowRegister(false)}
+                          className="text-black hover:text-gray-800 font-semibold transition-colors"
+                        >
+                          Inicia sesión
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-gray-100 mt-20">
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="flex items-center space-x-2 mb-4 md:mb-0">
+                <div className="w-6 h-6 bg-black rounded flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">T</span>
+                </div>
+                <span className="text-sm text-gray-600">© 2025 TGram. Todos los derechos reservados.</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -129,7 +209,7 @@ export default function HomePage() {
         {postsLoading && (
           <div className="text-center py-8">
             <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando posts...</p>
+            <p className="text-gray-600">Cargando</p>
           </div>
         )}
         

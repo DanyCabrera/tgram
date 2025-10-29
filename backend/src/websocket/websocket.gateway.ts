@@ -14,8 +14,18 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001', 
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      // URLs de producción (actualizar después del despliegue)
+      'https://tgram-frontend.vercel.app',
+      'https://tgram.vercel.app'
+    ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   },
 })
 export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -142,6 +152,10 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.logger.log(`📤 Enviando mensaje a la sala ${chatRoomId}:`, message);
     this.emitToRoom(chatRoomId, 'new_message', message);
     this.logger.log(`✅ Mensaje enviado a la sala ${chatRoomId}`);
+    
+    // También emitir directamente al receptor
+    this.emitToUser(message.receiverId, 'new_message', message);
+    this.logger.log(`📤 Mensaje enviado directamente al receptor ${message.receiverId}`);
   }
 
   // Método para notificar cuando un usuario está escribiendo

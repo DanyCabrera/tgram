@@ -111,7 +111,7 @@ export default function SearchPage() {
               Necesitas iniciar sesión para buscar usuarios
             </p>
             <Link 
-              href="/auth/login"
+              href="/"
               className="inline-block bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-200"
             >
               Iniciar Sesión

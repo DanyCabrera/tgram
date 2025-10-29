@@ -63,7 +63,7 @@ export const RegisterForm: React.FC = () => {
       
       // Redirigir después de 2 segundos para que el usuario vea el mensaje
       setTimeout(() => {
-        router.push('/auth/login');
+        router.push('/');
       }, 2000);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Error al registrarse');
@@ -73,7 +73,7 @@ export const RegisterForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen  flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Brand */}
         <div className="text-center mb-8">
@@ -83,13 +83,10 @@ export const RegisterForm: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             TGram
           </h1>
-          <p className="text-gray-600">
-            Únete a nuestra comunidad
-          </p>
         </div>
 
         {/* Register Form */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        <div className="bg-white rounded-2x">
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -241,15 +238,6 @@ export const RegisterForm: React.FC = () => {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              ¿Ya tienes cuenta?{' '}
-              <a href="/auth/login" className="text-gray-900 hover:text-gray-700 font-semibold transition-colors">
-                Inicia sesión
-              </a>
-            </p>
-          </div>
         </div>
 
       </div>

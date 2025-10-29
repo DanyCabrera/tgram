@@ -43,4 +43,22 @@ export class ChatController {
   async getChatMessages(@Request() req, @Param('id') roomId: string) {
     return this.chatService.getChatMessages(req.user.id, roomId);
   }
+
+  @Get('unread/count')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener contador de mensajes no leídos' })
+  @ApiResponse({ status: 200, description: 'Contador de mensajes no leídos' })
+  async getUnreadMessageCount(@Request() req) {
+    return this.chatService.getUnreadMessageCount(req.user.id);
+  }
+
+  @Post('rooms/:id/read')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Marcar mensajes de una sala como leídos' })
+  @ApiResponse({ status: 200, description: 'Mensajes marcados como leídos' })
+  async markMessagesAsRead(@Request() req, @Param('id') roomId: string) {
+    return this.chatService.markMessagesAsRead(req.user.id, roomId);
+  }
 }

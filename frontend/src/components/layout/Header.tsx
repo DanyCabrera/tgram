@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
+import { useMessages } from '../../contexts/MessageContext';
 import { Button } from '../ui/Button';
 import { useRouter } from 'next/navigation';
 import { 
   Bell, 
+  MessageCircle,
   User,
   Settings,
   LogOut
@@ -16,10 +18,11 @@ import {
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { unreadMessageCount } = useMessages();
   const router = useRouter();
   const handleLogout = () => {
     logout();
-    router.push('/auth/login');
+    router.push('/');
   };
 
   if (!user) {
@@ -31,10 +34,10 @@ export const Header: React.FC = () => {
           </Link>
 
           <div className="flex items-center space-x-4">
-            <Link href="/auth/login" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
+            <Link href="/" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">
               Iniciar Sesión
             </Link>
-            <Link href="/auth/register">
+            <Link href="/">
               <Button className="bg-gray-900 hover:bg-gray-800 text-white">
                 Registrarse
               </Button>
@@ -55,6 +58,18 @@ export const Header: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
+          {/* Messages */}
+          <Link href="/chat">
+            <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 relative">
+              <MessageCircle className="w-5 h-5" />
+              {unreadMessageCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                </span>
+              )}
+            </Button>
+          </Link>
+
           {/* Notifications */}
           <Link href="/notifications">
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 relative">

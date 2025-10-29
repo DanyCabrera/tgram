@@ -26,6 +26,9 @@ export class Message {
   @Column()
   chatRoomId: string;
 
+  @Column({ default: false })
+  isRead: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

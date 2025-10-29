@@ -42,11 +42,11 @@ class ApiService {
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Solo redirigir si no estamos en una página de auth
-        if (error.response?.status === 401 && !window.location.pathname.includes('/auth/')) {
+        // Solo redirigir si no estamos en la página principal
+        if (error.response?.status === 401 && window.location.pathname !== '/') {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          window.location.href = '/auth/login';
+          window.location.href = '/';
         }
         return Promise.reject(error);
       }
@@ -300,6 +300,16 @@ class ApiService {
 
   async getUnreadCount(): Promise<{ count: number }> {
     const response: AxiosResponse<{ count: number }> = await this.api.get('/notifications/unread/count');
+    return response.data;
+  }
+
+  async getUnreadMessageCount(): Promise<{ count: number }> {
+    const response: AxiosResponse<{ count: number }> = await this.api.get('/chat/unread/count');
+    return response.data;
+  }
+
+  async markChatMessagesAsRead(chatRoomId: string): Promise<{ message: string; count: number }> {
+    const response: AxiosResponse<{ message: string; count: number }> = await this.api.post(`/chat/rooms/${chatRoomId}/read`);
     return response.data;
   }
 

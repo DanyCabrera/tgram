@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import { NotificationProvider } from "../contexts/NotificationContext";
+import { MessageProvider } from "../contexts/MessageContext";
 import { ChatProvider } from "../contexts/ChatContext";
 import { ToastProvider } from "../contexts/ToastContext";
 
@@ -21,9 +22,11 @@ export default function RootLayout({
         <ToastProvider>
           <AuthProvider>
             <NotificationProvider>
-              <ChatProvider>
-                {children}
-              </ChatProvider>
+              <MessageProvider>
+                <ChatProvider>
+                  {children}
+                </ChatProvider>
+              </MessageProvider>
             </NotificationProvider>
           </AuthProvider>
         </ToastProvider>

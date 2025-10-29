@@ -229,7 +229,7 @@ export default function SettingsPage() {
       // Cerrar sesión y redirigir al login
       setTimeout(() => {
         logout();
-        router.push('/auth/login');
+        router.push('/');
       }, 2000);
       
     } catch (error: any) {

@@ -15,7 +15,14 @@ class WebSocketService {
       auth: {
         token: token
       },
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      maxReconnectionAttempts: 5,
+      upgrade: true,
+      rememberUpgrade: false,
+      timeout: 20000
     });
 
     this.socket.on('connect', () => {
@@ -35,6 +42,14 @@ class WebSocketService {
     this.socket.on('connect_error', (error) => {
       console.error('Error de conexión WebSocket:', error);
       this.isConnected = false;
+      
+      // Intentar reconectar después de un delay
+      setTimeout(() => {
+        if (token) {
+          console.log('Reintentando conexión WebSocket...');
+          this.connect(token);
+        }
+      }, 5000);
     });
   }
 

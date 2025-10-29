@@ -153,7 +153,7 @@ export default function ChatPage() {
               Necesitas iniciar sesión para usar el chat
             </p>
             <a 
-              href="/auth/login"
+              href="/"
               className="inline-block bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-200"
             >
               Iniciar Sesión
