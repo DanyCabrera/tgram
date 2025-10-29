@@ -80,7 +80,7 @@ export class ChatService {
         senderId: savedMessage.senderId,
         receiverId: savedMessage.receiverId,
         chatRoomId: savedMessage.chatRoomId,
-        createdAt: savedMessage.createdAt,
+        createdAt: savedMessage.createdAt.toISOString(),
         sender: {
           id: senderId,
           name: sender?.name || 'Usuario',
@@ -135,7 +135,7 @@ export class ChatService {
               content: room.messages[0].content,
               senderId: room.messages[0].senderId,
               receiverId: room.messages[0].receiverId,
-              createdAt: room.messages[0].createdAt
+              createdAt: room.messages[0].createdAt.toISOString()
             } : null,
             unreadCount: unreadCount,
             hasUnreadMessages: unreadCount > 0
@@ -189,14 +189,17 @@ export class ChatService {
 
     console.log(`📨 Encontrados ${messages.length} mensajes en la sala ${roomId}`);
 
-    // Obtener información de los remitentes
-    const senderIds = [...new Set(messages.map(m => m.senderId))];
-    const senders = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.id IN (:...senderIds)', { senderIds })
-      .getMany();
+    // Obtener información de los remitentes solo si hay mensajes
+    let senderMap = new Map();
+    if (messages.length > 0) {
+      const senderIds = [...new Set(messages.map(m => m.senderId))];
+      const senders = await this.userRepository
+        .createQueryBuilder('user')
+        .where('user.id IN (:...senderIds)', { senderIds })
+        .getMany();
 
-    const senderMap = new Map(senders.map(s => [s.id, s]));
+      senderMap = new Map(senders.map(s => [s.id, s]));
+    }
 
     return {
       posts: messages.map(message => ({
@@ -205,7 +208,7 @@ export class ChatService {
         senderId: message.senderId,
         receiverId: message.receiverId,
         chatRoomId: message.chatRoomId,
-        createdAt: message.createdAt,
+        createdAt: message.createdAt.toISOString(),
         sender: {
           id: message.senderId,
           name: senderMap.get(message.senderId)?.name || 'Usuario',
@@ -261,21 +264,23 @@ export class ChatService {
 
   async getUnreadMessageCount(userId: string) {
     try {
-      // Contar mensajes no leídos usando una consulta más específica
+      console.log('🔍 ChatService: Obteniendo contador de mensajes no leídos para usuario:', userId);
+      
+      // Usar una consulta más simple y directa
       const result = await this.messageRepository.query(
         `SELECT COUNT(*) as count FROM messages m 
-         INNER JOIN chat_rooms r ON m."chatRoomId" = r.id 
-         WHERE r.participants @> $1 
-         AND m."receiverId" = $2 
-         AND m."senderId" != $3 
+         WHERE m."receiverId" = $1 
+         AND m."senderId" != $2 
          AND m."isRead" = false`,
-        [[userId], userId, userId]
+        [userId, userId]
       );
+      
       const unreadCount = parseInt(result[0].count);
+      console.log('📊 ChatService: Contador de mensajes no leídos:', unreadCount);
 
       return { count: unreadCount };
     } catch (error) {
-      console.error('Error obteniendo contador de mensajes no leídos:', error);
+      console.error('❌ ChatService: Error obteniendo contador de mensajes no leídos:', error);
       return { count: 0 };
     }
   }

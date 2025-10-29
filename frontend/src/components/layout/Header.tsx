@@ -20,6 +20,10 @@ export const Header: React.FC = () => {
   const { unreadCount } = useNotifications();
   const { unreadMessageCount } = useMessages();
   const router = useRouter();
+  
+  // Debug logs
+  console.log('🔍 Header: unreadMessageCount =', unreadMessageCount);
+  console.log('🔍 Header: unreadCount (notifications) =', unreadCount);
   const handleLogout = () => {
     logout();
     router.push('/');

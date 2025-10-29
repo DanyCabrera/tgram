@@ -946,6 +946,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       ));
       
       // Actualizar el contador global de mensajes no leídos
+      console.log('🔄 ChatContext: Marcando mensajes como leídos, actualizando contador...');
       refreshMessageCount();
     } catch (error) {
       console.error('Error marcando mensajes como leídos:', error);

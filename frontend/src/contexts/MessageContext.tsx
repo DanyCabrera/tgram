@@ -28,6 +28,11 @@ export const MessageProvider: React.FC<MessageProviderProps> = ({ children }) =>
   const { user, loading } = useAuth();
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
+  // Log cuando cambia el contador
+  useEffect(() => {
+    console.log('📊 MessageContext: Contador actualizado a:', unreadMessageCount);
+  }, [unreadMessageCount]);
+
   const loadUnreadMessageCount = async () => {
     if (!user || loading) {
       console.log('🔍 MessageContext: No hay usuario o está cargando, contador = 0');
@@ -37,17 +42,28 @@ export const MessageProvider: React.FC<MessageProviderProps> = ({ children }) =>
     
     try {
       console.log('🔍 MessageContext: Cargando contador de mensajes para usuario:', user.id);
+      console.log('🔍 MessageContext: Token disponible:', !!localStorage.getItem('token'));
+      
       // Cargar contador de mensajes no leídos desde la API
       const response = await apiService.getUnreadMessageCount();
       console.log('📨 MessageContext: Respuesta del API:', response);
-      setUnreadMessageCount(response.count);
+      console.log('📨 MessageContext: Tipo de respuesta:', typeof response);
+      console.log('📨 MessageContext: Count en respuesta:', response?.count);
+      console.log('📨 MessageContext: Estableciendo contador a:', response.count);
+      
+      const count = response?.count || 0;
+      setUnreadMessageCount(count);
+      
+      console.log('✅ MessageContext: Contador establecido exitosamente a:', count);
     } catch (error) {
       console.error('❌ MessageContext: Error cargando mensajes no leídos:', error);
+      console.error('❌ MessageContext: Detalles del error:', error);
       setUnreadMessageCount(0);
     }
   };
 
   const refreshMessageCount = () => {
+    console.log('🔄 MessageContext: Refrescando contador de mensajes...');
     loadUnreadMessageCount();
   };
 

@@ -18,6 +18,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { formatTime, formatDate } from '../../utils/dateUtils';
 
 export default function ChatPage() {
   const { user, loading } = useAuth();
@@ -95,31 +96,6 @@ export default function ChatPage() {
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return 'Hoy';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Ayer';
-    } else {
-      return date.toLocaleDateString('es-ES', { 
-        day: '2-digit', 
-        month: '2-digit' 
-      });
-    }
-  };
 
   const getMessageStatus = (message: any) => {
     if (message.senderId === user?.id) {

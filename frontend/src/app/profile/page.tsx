@@ -173,16 +173,6 @@ export default function ProfilePage() {
             ) : (
               <div className="w-full h-full bg-gradient-to-r from-blue-600 to-purple-700"></div>
             )}
-            
-            <Button
-              onClick={handleEditProfile}
-              variant="ghost"
-              size="sm"
-              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              Cambiar portada
-            </Button>
           </div>
 
           {/* Profile Info */}
@@ -202,15 +192,6 @@ export default function ProfilePage() {
                       <UserIcon className="w-16 h-16 text-white" />
                     )}
                   </div>
-                  
-                  <Button
-                    onClick={handleEditProfile}
-                    variant="ghost"
-                    size="sm"
-                    className="absolute -bottom-2 -right-2 bg-gray-800 hover:bg-gray-700 text-white"
-                  >
-                    <Camera className="w-4 h-4" />
-                  </Button>
                 </div>
 
                 {/* User Info */}
