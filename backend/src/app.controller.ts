@@ -1,4 +1,5 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { AppService } from './app.service';
 
 @Controller()
@@ -6,8 +7,10 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello() {
-    return { message: 'Red Social API is running!' };
+  redirectToSwagger(@Res() res: Response) {
+    // Redirigir a la documentación de Swagger cuando se accede a la raíz
+    // Funciona tanto en local como en Render
+    return res.redirect('/api');
   }
 
   @Post('clean-database')
