@@ -118,7 +118,7 @@ export default function HomePage() {
             <div className="hidden lg:block">
               <div className="max-w-md">
                 <h1 className="text-5xl font-bold text-black mb-6 leading-tight">
-                  Conecta con el mundo
+                  TGram
                 </h1>
                 <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                   Comparte tus momentos, descubre nuevas ideas y mantente conectado con las personas que más te importan.

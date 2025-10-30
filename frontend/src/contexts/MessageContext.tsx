@@ -34,8 +34,8 @@ export const MessageProvider: React.FC<MessageProviderProps> = ({ children }) =>
   }, [unreadMessageCount]);
 
   const loadUnreadMessageCount = async () => {
-    if (!user || loading) {
-      console.log('🔍 MessageContext: No hay usuario o está cargando, contador = 0');
+    if (!user) {
+      console.log('🔍 MessageContext: No hay usuario, contador = 0');
       setUnreadMessageCount(0);
       return;
     }
@@ -68,7 +68,7 @@ export const MessageProvider: React.FC<MessageProviderProps> = ({ children }) =>
   };
 
   useEffect(() => {
-    if (user && !loading) {
+    if (user) {
       loadUnreadMessageCount();
       
       // Conectar a WebSocket para mensajes en tiempo real
@@ -99,7 +99,7 @@ export const MessageProvider: React.FC<MessageProviderProps> = ({ children }) =>
       setUnreadMessageCount(0);
       webSocketService.disconnect();
     }
-  }, [user, loading]);
+  }, [user]);
 
   // Limpiar conexión al desmontar
   useEffect(() => {

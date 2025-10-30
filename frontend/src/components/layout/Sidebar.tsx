@@ -85,14 +85,6 @@ export const Sidebar: React.FC = () => {
             </p>
           </div>
         </div>
-        
-        <button
-          onClick={logout}
-          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Cerrar sesión</span>
-        </button>
       </div>
     </div>
   );

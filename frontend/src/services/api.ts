@@ -19,34 +19,37 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
+    const baseURL = process.env.NEXT_PUBLIC_API_URL as string || 'http://localhost:3000';
     this.api = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL as string,
-      timeout: 30000, // Aumentar timeout a 30 segundos
+      baseURL,
+      timeout: 60000,
     });
 
     // Interceptor para agregar token a las peticiones
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('token');
+          if (token) {
+            config.headers = config.headers || {};
+            (config.headers as any).Authorization = `Bearer ${token}`;
+          }
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
     // Interceptor para manejar respuestas
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Solo redirigir si no estamos en la página principal
-        if (error.response?.status === 401 && window.location.pathname !== '/') {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/';
+        if (typeof window !== 'undefined') {
+          if (error.response?.status === 401 && window.location.pathname !== '/') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+          }
         }
         return Promise.reject(error);
       }
@@ -55,8 +58,19 @@ class ApiService {
 
   // Auth endpoints
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/login', credentials);
-    return response.data;
+    try {
+      const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/login', credentials, { timeout: 60000 });
+      return response.data;
+    } catch (error: any) {
+      // Retry once on timeout (Render cold start mitigation)
+      const isTimeout = error?.code === 'ECONNABORTED' || /timeout/i.test(error?.message || '');
+      if (isTimeout) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const retryResponse: AxiosResponse<AuthResponse> = await this.api.post('/auth/login', credentials, { timeout: 60000 });
+        return retryResponse.data;
+      }
+      throw error;
+    }
   }
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {

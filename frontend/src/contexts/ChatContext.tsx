@@ -146,8 +146,13 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
         setWs(null);
       }
       setIsConnected(false);
-      // Limpiar localStorage
-      localStorage.removeItem(`chatState_${user?.id}`);
+      // Limpiar cualquier estado de chat persistido
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('chatState_')) {
+          localStorage.removeItem(key);
+        }
+      }
     }
 
     return () => {
@@ -206,17 +211,23 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       
       setIsConnecting(true);
       
-      const socket = io(process.env.NEXT_PUBLIC_API_URL as string, {
+      const serverUrl = (process.env.NEXT_PUBLIC_API_URL as string) || (typeof window !== 'undefined' ? window.location.origin : '');
+      if (!serverUrl) {
+        setIsConnecting(false);
+        return;
+      }
+
+      const socket = io(serverUrl, {
         auth: {
           token: token
         },
+        path: (process.env.NEXT_PUBLIC_SOCKET_PATH as string) || '/socket.io',
         transports: ['websocket', 'polling'],
-        timeout: 20000,
+        timeout: 60000,
         forceNew: true,
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
-        maxReconnectionAttempts: 5,
         upgrade: true,
         rememberUpgrade: false
       });
