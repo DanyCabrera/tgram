@@ -9,8 +9,25 @@ class WebSocketService {
       return;
     }
 
-    const serverUrl = process.env.NEXT_PUBLIC_API_URL;
-    
+    let rawServerUrl =
+      process.env.NEXT_PUBLIC_RENDER_API_URL ||
+      process.env.RENDER_API_URL ||
+      '';
+
+    if (!rawServerUrl && typeof window !== 'undefined') {
+      const isHttps = window.location.protocol === 'https:';
+      if (isHttps) {
+        rawServerUrl = 'https://tgram-jlbj.onrender.com';
+      } else {
+        rawServerUrl = 'http://localhost:3001';
+      }
+    } else if (!rawServerUrl) {
+      rawServerUrl = 'http://localhost:3001';
+    }
+
+    // Normalizar: si viene con sufijo '/api', quitarlo para evitar rutas duplicadas
+    const serverUrl = rawServerUrl.replace(/\/?api\/?$/, '');
+
     this.socket = io(serverUrl, {
       auth: {
         token: token

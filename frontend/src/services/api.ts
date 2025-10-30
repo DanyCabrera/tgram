@@ -19,7 +19,23 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    let rawBaseUrl =
+      process.env.NEXT_PUBLIC_RENDER_API_URL ||
+      process.env.RENDER_API_URL ||
+      '';
+
+    // Evitar fallback http en producción (páginas HTTPS)
+    if (!rawBaseUrl && typeof window !== 'undefined') {
+      const isHttps = window.location.protocol === 'https:';
+      if (isHttps) {
+        rawBaseUrl = 'https://tgram-jlbj.onrender.com';
+      } else {
+        rawBaseUrl = 'http://localhost:3001';
+      }
+    }
+
+    // Normalizar: si viene con sufijo '/api', quitarlo para evitar rutas duplicadas
+    const baseURL = rawBaseUrl.replace(/\/?api\/?$/, ''); 
     this.api = axios.create({
       baseURL,
       timeout: 60000,
