@@ -9,7 +9,7 @@ class WebSocketService {
       return;
     }
 
-    const serverUrl = process.env.NEXT_PUBLIC_API_URL as string;
+    const serverUrl = process.env.NEXT_PUBLIC_API_URL;
     
     this.socket = io(serverUrl, {
       auth: {

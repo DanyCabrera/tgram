@@ -19,7 +19,7 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL as string || 'http://localhost:3000';
+    const baseURL = process.env.NEXT_PUBLIC_API_URL;
     this.api = axios.create({
       baseURL,
       timeout: 60000,
