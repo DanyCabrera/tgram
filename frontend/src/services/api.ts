@@ -20,7 +20,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+      baseURL: process.env.NEXT_PUBLIC_API_URL as string,
       timeout: 30000, // Aumentar timeout a 30 segundos
     });
 

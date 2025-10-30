@@ -9,7 +9,7 @@ class WebSocketService {
       return;
     }
 
-    const serverUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const serverUrl = process.env.NEXT_PUBLIC_API_URL as string;
     
     this.socket = io(serverUrl, {
       auth: {
@@ -19,7 +19,6 @@ class WebSocketService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
-      maxReconnectionAttempts: 5,
       upgrade: true,
       rememberUpgrade: false,
       timeout: 20000

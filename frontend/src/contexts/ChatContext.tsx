@@ -206,7 +206,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       
       setIsConnecting(true);
       
-      const socket = io('http://localhost:3001', {
+      const socket = io(process.env.NEXT_PUBLIC_API_URL as string, {
         auth: {
           token: token
         },
