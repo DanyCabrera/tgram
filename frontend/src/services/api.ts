@@ -20,19 +20,9 @@ class ApiService {
 
   constructor() {
     let rawBaseUrl =
-      process.env.NEXT_PUBLIC_RENDER_API_URL ||
-      process.env.RENDER_API_URL ||
-      '';
-
-    // Evitar fallback http en producción (páginas HTTPS)
-    if (!rawBaseUrl && typeof window !== 'undefined') {
-      const isHttps = window.location.protocol === 'https:';
-      if (isHttps) {
-        rawBaseUrl = 'https://tgram-jlbj.onrender.com';
-      } else {
-        rawBaseUrl = 'http://localhost:3001';
-      }
-    }
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.API_URL ||
+      'http://localhost:3001'; // Fallback solo para desarrollo local
 
     // Normalizar: si viene con sufijo '/api', quitarlo para evitar rutas duplicadas
     const baseURL = rawBaseUrl.replace(/\/?api\/?$/, ''); 

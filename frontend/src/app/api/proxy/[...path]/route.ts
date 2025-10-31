@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 function getBackendBaseUrl(): string {
-  const raw = process.env.RENDER_API_URL || '';
+  const raw = process.env.API_URL || '';
   if (!raw) {
-    throw new Error('RENDER_API_URL no está configurada en el entorno del servidor');
+    throw new Error('API_URL no está configurada en el entorno del servidor');
   }
   return raw.replace(/\/?api\/?$/, '');
 }
