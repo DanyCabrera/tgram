@@ -25,7 +25,18 @@ class ApiService {
       'http://localhost:3001'; // Fallback solo para desarrollo local
 
     // Normalizar: si viene con sufijo '/api', quitarlo para evitar rutas duplicadas
-    const baseURL = rawBaseUrl.replace(/\/?api\/?$/, ''); 
+    const baseURL = rawBaseUrl.replace(/\/?api\/?$/, '');
+    
+    // Log para debugging (temporal - remover después)
+    if (typeof window !== 'undefined') {
+      console.log('🔗 API Base URL configurada:', baseURL);
+      console.log('🔗 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL || 'NO CONFIGURADO');
+      console.log('🔗 API_URL:', process.env.API_URL || 'NO CONFIGURADO');
+      if (!process.env.NEXT_PUBLIC_API_URL && !process.env.API_URL) {
+        console.warn('⚠️ ADVERTENCIA: No hay variable de entorno configurada. Usando fallback localhost.');
+      }
+    }
+    
     this.api = axios.create({
       baseURL,
       timeout: 60000,

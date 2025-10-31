@@ -43,14 +43,22 @@ export const LoginForm: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('Intentando iniciar sesión con:', { email: data.email });
       await login(data);
+      console.log('Login exitoso, redirigiendo...');
       // Solo redirigir si el login fue exitoso
       setTimeout(() => {
         router.push('/');
+        router.refresh(); // Forzar refresh de la página
       }, 100);
     } catch (error: any) {
       // Mostrar error específico y NO redirigir
       let errorMessage = 'Error al iniciar sesión';
+      
+      console.error('Error completo de login:', error);
+      console.error('Error response:', error?.response);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
       
       if (error.response?.data?.message) {
         if (error.response.data.message === 'Credenciales inválidas') {
@@ -62,10 +70,15 @@ export const LoginForm: React.FC = () => {
         errorMessage = 'Campos invalidos';
       } else if (error.response?.status === 404) {
         errorMessage = 'Campos invalidos';
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = 'Tiempo de espera agotado. Por favor, intenta de nuevo.';
+      } else if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
+        errorMessage = 'Error de conexión. Verifica tu conexión a internet o que el servidor esté disponible.';
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
       }
       
       setError(errorMessage);
-      console.error('Error de login:', error);
     } finally {
       setIsLoading(false);
     }

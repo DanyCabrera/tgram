@@ -14,16 +14,19 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001', 
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-      // URLs de producción
-      'https://tgram-ruby.vercel.app',
-      'https://tgram-frontend.vercel.app',
-      'https://tgram.vercel.app'
-    ],
+    origin: (() => {
+      const origins: string[] = [];
+      
+      // Agregar URL del frontend desde variable de entorno
+      if (process.env.FRONTEND_URL) {
+        origins.push(process.env.FRONTEND_URL);
+      }
+      
+      // URL de producción (fallback)
+      origins.push('https://tgram-ruby.vercel.app');
+      
+      return origins;
+    })(),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
