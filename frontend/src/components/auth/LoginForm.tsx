@@ -73,7 +73,7 @@ export const LoginForm: React.FC = () => {
       } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
         errorMessage = 'Tiempo de espera agotado. Por favor, intenta de nuevo.';
       } else if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
-        errorMessage = 'Error de conexión. Verifica tu conexión a internet o que el servidor esté disponible.';
+        errorMessage = 'Error de conexión con el servidor. Por favor verifica que el backend esté funcionando y que la variable NEXT_PUBLIC_API_URL esté configurada correctamente en Vercel.';
       } else if (error.message) {
         errorMessage = `Error: ${error.message}`;
       }
