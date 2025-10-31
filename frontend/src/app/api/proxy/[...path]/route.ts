@@ -8,9 +8,10 @@ function getBackendBaseUrl(): string {
   return raw.replace(/\/?api\/?$/, '');
 }
 
-async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
+async function proxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const backend = getBackendBaseUrl();
-  const targetUrl = `${backend}/${(params.path || []).join('/')}`;
+  const resolvedParams = await params;
+  const targetUrl = `${backend}/${(resolvedParams.path || []).join('/')}`;
 
   const headers = new Headers(req.headers);
   // Asegurar encabezados adecuados
