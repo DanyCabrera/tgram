@@ -15,7 +15,8 @@ async function bootstrap() {
       'http://localhost:3001', 
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
-      // URLs de producción (actualizar después del despliegue)
+      // URLs de producción
+      'https://tgram-ruby.vercel.app',
       'https://tgram-frontend.vercel.app',
       'https://tgram.vercel.app'
     ],
