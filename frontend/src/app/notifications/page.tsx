@@ -41,15 +41,12 @@ export default function NotificationsPage() {
       const response = await apiService.getNotifications();
       console.log('Respuesta de notificaciones:', response);
       
-      // Verificar si la respuesta tiene la estructura esperada
-      if (response && response.notifications && Array.isArray(response.notifications)) {
-        setNotifications(response.notifications);
-      } else if (response && Array.isArray(response)) {
-        setNotifications(response);
-      } else if (response && response.posts && Array.isArray(response.posts)) {
+      // PaginatedResponse tiene la propiedad 'posts' que contiene las notificaciones
+      if (response && response.posts && Array.isArray(response.posts)) {
         setNotifications(response.posts);
-      } else if (response && response.data && Array.isArray(response.data)) {
-        setNotifications(response.data);
+      } else if (response && Array.isArray(response)) {
+        // Fallback por si acaso viene como array directo
+        setNotifications(response);
       } else {
         console.warn('Estructura de respuesta inesperada:', response);
         setNotifications([]);
