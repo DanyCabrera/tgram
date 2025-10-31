@@ -4,6 +4,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { webcrypto as nodeWebCrypto, randomUUID as nodeRandomUUID } from 'crypto';
+
+// Polyfill para `global.crypto.randomUUID` en entornos Node 18 donde no está disponible
+// Algunas dependencias (ej. @nestjs/typeorm) esperan `crypto.randomUUID()` global
+// Render usa Node 18.x; aseguramos compatibilidad definiendo esta API si falta
+if (!(global as any).crypto || !(global as any).crypto.randomUUID) {
+  (global as any).crypto = {
+    ...((global as any).crypto || {}),
+    // Preferir WebCrypto si existe, si no, usar la implementación de Node
+    randomUUID: (nodeWebCrypto as any)?.randomUUID || nodeRandomUUID,
+  } as any;
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
