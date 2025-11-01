@@ -10,7 +10,6 @@ import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { ExploreModule } from './explore/explore.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { UploadModule } from './upload/upload.module';
 import { User } from './entities/user.entity';
@@ -48,7 +47,6 @@ import { Media } from './entities/media.entity';
     PostsModule,
     ChatModule,
     NotificationsModule,
-    ExploreModule,
     WebSocketModule,
     UploadModule,
   ],

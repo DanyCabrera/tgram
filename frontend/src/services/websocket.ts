@@ -21,6 +21,7 @@ class WebSocketService {
       auth: {
         token: token
       },
+      path: (process.env.NEXT_PUBLIC_SOCKET_PATH as string) || '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,

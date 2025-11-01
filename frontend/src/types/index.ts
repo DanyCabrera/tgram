@@ -142,3 +142,11 @@ export interface FollowingResponse {
   limit: number;
   totalPages: number;
 }
+
+export interface NotificationsResponse {
+  notifications: Notification[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

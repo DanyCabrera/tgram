@@ -12,7 +12,8 @@ import {
   ApiResponse,
   PaginatedResponse,
   UsersResponse,
-  FollowingResponse
+  FollowingResponse,
+  NotificationsResponse
 } from '../types';
 
 class ApiService {
@@ -268,12 +269,6 @@ class ApiService {
   }
 
 
-  // Explore endpoints
-  async getExplorePosts(): Promise<{ posts: Post[]; total: number }> {
-    const response: AxiosResponse<{ posts: Post[]; total: number }> = await this.api.get('/explore/posts');
-    return response.data;
-  }
-
   // Chat endpoints
   async createChatRoom(participantIds: string[], name?: string, isGroup = false): Promise<ChatRoom> {
     const response: AxiosResponse<ChatRoom> = await this.api.post('/chat/rooms', {
@@ -317,8 +312,8 @@ class ApiService {
   }
 
   // Notifications endpoints
-  async getNotifications(page = 1, limit = 20): Promise<PaginatedResponse<Notification>> {
-    const response: AxiosResponse<PaginatedResponse<Notification>> = await this.api.get('/notifications', {
+  async getNotifications(page = 1, limit = 20): Promise<NotificationsResponse> {
+    const response: AxiosResponse<NotificationsResponse> = await this.api.get('/notifications', {
       params: { page, limit }
     });
     return response.data;

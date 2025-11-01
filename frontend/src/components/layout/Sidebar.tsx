@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Home, 
-  Search, 
   MessageCircle, 
   Bell, 
   User, 
@@ -24,7 +23,6 @@ export const Sidebar: React.FC = () => {
 
   const navigationItems = [
     { name: 'Inicio', href: '/', icon: Home },
-    { name: 'Explorar', href: '/explore', icon: Search },
     { name: 'Amigos', href: '/friends', icon: Users },
     { name: 'Mensajes', href: '/chat', icon: MessageCircle },
     { name: 'Notificaciones', href: '/notifications', icon: Bell },
