@@ -6,7 +6,7 @@ Una red social moderna construida con **NestJS** (backend) y **Next.js** (fronte
 
 ### Backend (NestJS + TypeScript)
 - ✅ **Autenticación JWT** con bcrypt para contraseñas
-- ✅ **Base de datos Supabase** con TypeORM
+- ✅ **Base de datos Neon.tech** (PostgreSQL) con TypeORM
 - ✅ **Modelos de datos** completos (User, Post, Comment, Like, Chat, Notification)
 - ✅ **API REST** con validación y documentación Swagger
 - ✅ **WebSockets** para chat en tiempo real
@@ -27,7 +27,7 @@ Una red social moderna construida con **NestJS** (backend) y **Next.js** (fronte
 ### Backend
 - **NestJS** - Framework de Node.js
 - **TypeScript** - Tipado estático
-- **Supabase** - Base de datos PostgreSQL
+- **Neon.tech** - Base de datos PostgreSQL serverless
 - **TypeORM** - ORM para TypeScript
 - **JWT** - Autenticación
 - **bcrypt** - Encriptación de contraseñas
@@ -48,7 +48,7 @@ Una red social moderna construida con **NestJS** (backend) y **Next.js** (fronte
 ## 📋 Prerrequisitos
 
 - **Node.js** (v18 o superior)
-- **Supabase** (cuenta gratuita)
+- **Neon.tech** (cuenta gratuita)
 - **npm** o **yarn**
 
 ## 🔧 Instalación y Configuración
@@ -59,11 +59,11 @@ git clone <tu-repositorio>
 cd RedSocial
 ```
 
-### 2. Configurar Supabase
+### 2. Configurar Neon.tech
 
-1. Crear cuenta en [supabase.com](https://supabase.com)
+1. Crear cuenta en [neon.tech](https://neon.tech)
 2. Crear un nuevo proyecto
-3. Obtener las credenciales de conexión
+3. Obtener las credenciales de conexión desde el dashboard
 4. Configurar las variables de entorno
 
 ### 3. Configurar el Backend
@@ -77,18 +77,16 @@ npm install
 # Crear archivo .env basado en env.example
 cp env.example .env
 
-# Editar .env con tus credenciales de Supabase
-# DB_HOST=db.xxxxx.supabase.co
+# Editar .env con tus credenciales de Neon.tech
+# DB_HOST=ep-xxxxx-pooler.us-east-1.aws.neon.tech
 # DB_PORT=5432
-# DB_USERNAME=postgres
-# DB_PASSWORD=tu_password_de_supabase
-# DB_NAME=postgres
-# SUPABASE_API_KEY=tu_api_key_de_supabase
-# SUPABASE_URL=https://xxxxx.supabase.co
+# DB_USERNAME=neondb_owner
+# DB_PASSWORD=tu_password_de_neon
+# DB_NAME=neondb
 # JWT_SECRET=tu_jwt_secret_super_seguro
 
 # Probar conexión
-npm run test:supabase
+npm run test:neon
 
 # Ejecutar en desarrollo
 npm run start:dev
@@ -179,7 +177,7 @@ npm run start:dev    # Desarrollo
 npm run build       # Construir
 npm run start       # Producción
 npm run test        # Tests
-npm run test:supabase # Probar conexión a Supabase
+npm run test:neon   # Probar conexión a Neon.tech
 ```
 
 ### Frontend
@@ -193,16 +191,12 @@ npm run start       # Producción
 
 ### Backend (.env)
 ```env
-# Supabase Database
-DB_HOST=db.xxxxx.supabase.co
+# Neon.tech Database
+DB_HOST=ep-xxxxx-pooler.us-east-1.aws.neon.tech
 DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=tu_password_de_supabase
-DB_NAME=postgres
-
-# Supabase API
-SUPABASE_API_KEY=tu_api_key_de_supabase
-SUPABASE_URL=https://xxxxx.supabase.co
+DB_USERNAME=neondb_owner
+DB_PASSWORD=tu_password_de_neon
+DB_NAME=neondb
 
 # JWT
 JWT_SECRET=tu_jwt_secret_super_seguro
@@ -247,9 +241,10 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 Si tienes problemas o preguntas:
 
 1. Revisa la documentación de la API en http://localhost:3000/api
-2. Verifica que Supabase esté ejecutándose
+2. Verifica que Neon.tech esté configurado correctamente
 3. Asegúrate de que las variables de entorno estén configuradas correctamente
 4. Revisa los logs del backend y frontend
+5. Prueba la conexión con `npm run test:neon` en el backend
 
 ---
 
